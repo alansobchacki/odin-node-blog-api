@@ -1,9 +1,15 @@
 const express = require("express");
 const router = express.Router();
+const db = require("../db/queries");
 
-/* GET users listing. */
-router.get("/", function (req, res) {
-  res.send("respond with a resource");
+// GET all users
+router.get("/", async function (req, res) {
+  try {
+    const users = await db.getAllUsers();
+    res.json(users);
+  } catch (err) {
+    console.log(err);
+  }
 });
 
 module.exports = router;
