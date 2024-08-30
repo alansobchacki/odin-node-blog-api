@@ -27,9 +27,9 @@ async function getAllUsers() {
   }
 }
 
-async function createUser(email, name, password, admin) {
+async function createUser(email, name, password) {
   try {
-    const isAdmin = email === process.env.ADMIN_EMAIL ? true : admin;
+    const isAdmin = email === process.env.ADMIN_EMAIL ? true : false;
     const user = await prisma.user.create({
       data: {
         email,
