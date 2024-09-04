@@ -7,8 +7,12 @@ const session = require("express-session");
 const passport = require("passport");
 const LocalStrategy = require("passport-local").Strategy;
 const bcrypt = require("bcryptjs");
+const jwt = require("jsonwebtoken");
+
 const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
+
+const authenticateToken = require("./middleware/authenticateToken");
 
 const indexRouter = require("./routes/index");
 const usersRouter = require("./routes/users");
@@ -31,7 +35,7 @@ app.use(express.urlencoded({ extended: false }));
 app.use("/", indexRouter);
 app.use("/users", usersRouter);
 
-// Handles our log-in / log-out logic
+// Passport LocalStrategy setup
 passport.use(
   new LocalStrategy(async (username, password, done) => {
     try {
@@ -42,19 +46,28 @@ passport.use(
       if (!user) {
         return done(null, false, { message: "Incorrect username" });
       }
+
       const match = await bcrypt.compare(password, user.password);
+
       if (!match) {
         return done(null, false, { message: "Incorrect password" });
       }
-      return done(null, user);
+
+      // Generate JWT on successful login
+      const token = jwt.sign({ userId: user.id }, process.env.JWT_SECRET, {
+        expiresIn: "1h",
+      });
+
+      // Include token in user object returned by Passport
+      return done(null, { user, token });
     } catch (err) {
       return done(err);
     }
   })
 );
 
-passport.serializeUser((user, done) => {
-  done(null, user.id);
+passport.serializeUser((userWithToken, done) => {
+  done(null, userWithToken.user.id); // Serialize the user ID
 });
 
 passport.deserializeUser(async (id, done) => {
@@ -69,13 +82,20 @@ passport.deserializeUser(async (id, done) => {
   }
 });
 
+// Custom login route to handle JWT
 app.post(
   "/log-in",
-  passport.authenticate("local", {
-    successRedirect: "/",
-    failureRedirect: "/",
-  })
+  passport.authenticate("local", { session: false }), // Disable session to rely on JWT
+  (req, res) => {
+    // Respond with JWT and user info
+    res.json({ token: req.user.token, user: req.user.user });
+  }
 );
+
+// Protect routes using JWT
+app.get("/protected-route", authenticateToken, (req, res) => {
+  res.json({ message: "This is a protected route" });
+});
 
 app.get("/log-out", (req, res, next) => {
   req.logout((err) => {
@@ -93,11 +113,9 @@ app.use(function (req, res, next) {
 
 // error handler
 app.use(function (err, req, res) {
-  // set locals, only providing error in development
   res.locals.message = err.message;
   res.locals.error = req.app.get("env") === "development" ? err : {};
 
-  // render the error page
   res.status(err.status || 500);
   res.render("error");
 });
