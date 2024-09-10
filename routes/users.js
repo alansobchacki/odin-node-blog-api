@@ -27,8 +27,8 @@ router.get("/", authenticateToken, async function (req, res) {
   try {
     const users = await db.getAllUsers();
     res.json(users);
-  } catch (err) {
-    console.log(err);
+  } catch (error) {
+    console.log(error);
   }
 });
 

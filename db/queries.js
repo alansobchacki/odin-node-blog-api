@@ -45,8 +45,43 @@ async function createUser(email, name, password) {
   }
 }
 
+// all post related queries
+async function createPost(user, title, content, published) {
+  try {
+    if (!user || !user.admin) {
+      throw new Error("Access denied. Only admins can create posts.");
+    }
+
+    const post = await prisma.post.create({
+      data: {
+        title,
+        content,
+        published: published || false,
+        author: { connect: { id: user.id } },
+      },
+    });
+
+    return post;
+  } catch (error) {
+    console.error("Error creating post:", error);
+    throw error;
+  }
+}
+
+async function getAllPosts() {
+  try {
+    const posts = await prisma.post.findMany();
+    return posts;
+  } catch (error) {
+    console.error("Error fetching posts:", error);
+    throw error;
+  }
+}
+
 module.exports = {
   getUser,
   getAllUsers,
   createUser,
+  getAllPosts,
+  createPost,
 };
