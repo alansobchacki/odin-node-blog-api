@@ -2,8 +2,9 @@ const express = require("express");
 const router = express.Router();
 const bcrypt = require("bcryptjs");
 const db = require("../db/queries");
+const authenticateToken = require("../middleware/authenticateToken");
 
-// POST / CREATE new user
+// create new user
 router.post("/", async function (req, res) {
   const { email, name, password } = req.body;
 
@@ -21,24 +22,14 @@ router.post("/", async function (req, res) {
   }
 });
 
-// GET / READ all users
-router.get("/", async function (req, res) {
+// get all users
+router.get("/", authenticateToken, async function (req, res) {
   try {
     const users = await db.getAllUsers();
     res.json(users);
   } catch (err) {
     console.log(err);
   }
-});
-
-// PUT / UPDATE a user
-router.put("/:userId", (req, res) => {
-  return res.send(`PUT HTTP method on user /${req.params.userId} resource`);
-});
-
-// DELETE a user
-router.delete("/:userId", (req, res) => {
-  return res.send(`DELETE HTTP method on user /${req.params.userId} resource`);
 });
 
 module.exports = router;
