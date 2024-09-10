@@ -21,14 +21,15 @@ model User {
 }
 
 model Post {
-  id        Int      @id @default(autoincrement())
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  title     String   @db.VarChar(255)
+  id        Int       @id @default(autoincrement())
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  title     String    @db.VarChar(255)
   content   String
-  published Boolean  @default(false)
-  author    User     @relation(fields: [authorId], references: [id])
+  published Boolean   @default(false)
+  author    User      @relation(fields: [authorId], references: [id])
   authorId  Int
+  comments  Comment[]
 }
 
 model Comment {
@@ -37,4 +38,7 @@ model Comment {
   content   String
   author    User     @relation(fields: [authorId], references: [id])
   authorId  Int
+  post      Post     @relation(fields: [postId], references: [id])
+  postId    Int
 }
+
