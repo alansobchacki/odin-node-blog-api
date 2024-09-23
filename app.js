@@ -4,6 +4,7 @@ const path = require("path");
 const cookieParser = require("cookie-parser");
 const logger = require("morgan");
 const session = require("express-session");
+const cors = require('cors');
 const passport = require("passport");
 const LocalStrategy = require("passport-local").Strategy;
 const bcrypt = require("bcryptjs");
@@ -23,6 +24,8 @@ const app = express();
 app.set("views", path.join(__dirname, "views"));
 app.set("view engine", "jade");
 
+// enable CORS to protect API routes
+app.use(cors());
 app.use(logger("dev"));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
@@ -40,7 +43,7 @@ passport.use(
   new LocalStrategy(async (username, password, done) => {
     try {
       const user = await prisma.user.findUnique({
-        where: { username: username },
+        where: { name: username },
       });
 
       if (!user) {
@@ -67,7 +70,7 @@ passport.use(
 );
 
 passport.serializeUser((userWithToken, done) => {
-  done(null, userWithToken.user.id); // Serialize the user ID
+  done(null, userWithToken.user.id);
 });
 
 passport.deserializeUser(async (id, done) => {
@@ -117,7 +120,7 @@ app.use(function (err, req, res) {
   res.locals.error = req.app.get("env") === "development" ? err : {};
 
   res.status(err.status || 500);
-  res.render("error");
+  res.json({ error: err.message });
 });
 
 module.exports = app;

@@ -2,7 +2,7 @@ const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
 require("dotenv").config();
 
-// all user-related queries
+// all user related queries
 async function getUser(name) {
   try {
     const user = await prisma.user.findFirst({
