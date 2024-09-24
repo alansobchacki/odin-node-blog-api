@@ -15,10 +15,12 @@ router.post("/", async function (req, res) {
 
     res.status(201).json(user);
   } catch (error) {
-    console.error("Error creating user:", error);
-    res
-      .status(500)
-      .json({ error: "An error occurred while creating the user." });
+    if (error.code === "P2002") {
+      const field = error.meta.target[0];
+      res.status(400).json({ message: `${field} already taken` });
+    } else {
+      res.status(500).json({ message: "Something went wrong" });
+    }
   }
 });
 
