@@ -48,10 +48,6 @@ async function createUser(email, name, password) {
 // all post related queries
 async function createPost(user, title, content, published) {
   try {
-    if (!user || !user.admin) {
-      throw new Error("Access denied. Only admins can create posts.");
-    }
-
     const post = await prisma.post.create({
       data: {
         title,

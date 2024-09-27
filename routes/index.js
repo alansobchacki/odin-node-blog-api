@@ -1,9 +1,14 @@
 const express = require("express");
 const router = express.Router();
+const db = require("../db/queries");
 
-/* GET home page. */
 router.get("/", async function (req, res) {
-  res.send("Welcome to the Blog API");
+  try {
+    const posts = await db.getAllPosts();
+    res.json(posts);
+  } catch (error) {
+    console.log(error);
+  }
 });
 
 module.exports = router;
