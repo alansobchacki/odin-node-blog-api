@@ -2,7 +2,6 @@ const express = require("express");
 const router = express.Router();
 const bcrypt = require("bcryptjs");
 const db = require("../db/queries");
-const authenticateToken = require("../middleware/authenticateToken");
 
 // create new user
 router.post("/", async function (req, res) {
@@ -25,7 +24,7 @@ router.post("/", async function (req, res) {
 });
 
 // get all users
-router.get("/", authenticateToken, async function (req, res) {
+router.get("/", async function (req, res) {
   try {
     const users = await db.getAllUsers();
     res.json(users);

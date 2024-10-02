@@ -66,7 +66,13 @@ async function createPost(user, title, content, published) {
 
 async function getAllPosts() {
   try {
-    const posts = await prisma.post.findMany();
+    const posts = await prisma.post.findMany({
+      where: {
+        author: {
+          admin: true,
+        },
+      },
+    });
     return posts;
   } catch (error) {
     console.error("Error fetching posts:", error);

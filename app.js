@@ -3,19 +3,19 @@ const express = require("express");
 const path = require("path");
 const cookieParser = require("cookie-parser");
 const logger = require("morgan");
-const cors = require('cors');
+const cors = require("cors");
 const passport = require("passport");
-const LocalStrategy = require("passport-local").Strategy;
+const JwtStrategy = require('passport-jwt').Strategy;
+const ExtractJwt = require('passport-jwt').ExtractJwt;
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 
 const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
 
-const authenticateToken = require("./middleware/authenticateToken");
-
 const indexRouter = require("./routes/index");
 const usersRouter = require("./routes/users");
+const postsRouter = require("./routes/posts");
 
 const app = express();
 
@@ -26,81 +26,80 @@ app.set("view engine", "jade");
 app.use(cors());
 app.use(logger("dev"));
 app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
+app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, "public")));
-app.use(express.urlencoded({ extended: false }));
 
-app.use("/", indexRouter);
-app.use("/users", usersRouter);
+// JWT Strategy setup
+const opts = {
+  jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(), 
+  secretOrKey: process.env.JWT_SECRET
+};
 
-// Passport LocalStrategy setup
 passport.use(
-  new LocalStrategy(async (username, password, done) => {
+  new JwtStrategy(opts, async (jwtPayload, done) => {
     try {
       const user = await prisma.user.findUnique({
-        where: { name: username },
+        where: { id: jwtPayload.userId },
       });
 
       if (!user) {
-        return done(null, false, { message: "Incorrect username" });
+        return done(null, false);
       }
 
-      const match = await bcrypt.compare(password, user.password);
-
-      if (!match) {
-        return done(null, false, { message: "Incorrect password" });
-      }
-
-      const token = jwt.sign({ userId: user.id }, process.env.JWT_SECRET, {
-        expiresIn: "1h",
-      });
-
-      return done(null, { user, token });
+      return done(null, user);
     } catch (err) {
-      return done(err);
+      return done(err, false);
     }
   })
 );
 
-passport.serializeUser((userWithToken, done) => {
-  done(null, userWithToken.user.id);
-});
+app.use(passport.initialize());
 
-passport.deserializeUser(async (id, done) => {
+// Login route (username/password authentication + JWT generation)
+app.post("/log-in", async (req, res) => {
+  const { username, password } = req.body;
+
   try {
     const user = await prisma.user.findUnique({
-      where: { id: id },
+      where: { name: username },
     });
 
-    done(null, user);
-  } catch (err) {
-    done(err);
-  }
-});
-
-app.post(
-  "/log-in",
-  passport.authenticate("local", { session: false }),
-  (req, res) => {
-    res.json({ token: req.user.token, user: req.user.user });
-  }
-);
-
-app.get("/protected-route", authenticateToken, (req, res) => {
-  res.json({ message: "This is a protected route" });
-});
-
-app.get("/log-out", (req, res, next) => {
-  req.logout((err) => {
-    if (err) {
-      return next(err);
+    if (!user) {
+      return res.status(400).json({ message: "Incorrect username" });
     }
-    res.redirect("/");
-  });
+
+    const match = await bcrypt.compare(password, user.password);
+
+    if (!match) {
+      return res.status(400).json({ message: "Incorrect password" });
+    }
+
+    const token = jwt.sign(
+      { userId: user.id, admin: user.admin },
+      process.env.JWT_SECRET,
+      { expiresIn: "1h" }
+    );
+
+    return res.json({ token, user });
+  } catch (err) {
+    return res.status(500).json({ message: "Login error", error: err.message });
+  }
 });
 
-// catch 404 and forward to error handler
+app.use("/", indexRouter);
+app.use("/users", passport.authenticate('jwt', { session: false }), usersRouter);
+app.use("/posts", passport.authenticate('jwt', { session: false }), postsRouter);
+
+app.get("/protected-route", passport.authenticate('jwt', { session: false }), (req, res) => {
+  res.json({ message: "This is a protected route", user: req.user });
+});
+
+app.get("/log-out", (req, res) => {
+  req.logout();
+  res.json({ message: "Logged out successfully" });
+});
+
 app.use(function (req, res, next) {
   next(createError(404));
 });
