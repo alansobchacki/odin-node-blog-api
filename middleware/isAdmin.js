@@ -1,5 +1,4 @@
 const isAdmin = (req, res, next) => {
-  console.log("Admin check:", req.user); // Debugging: Check if user has admin status
   if (req.user && req.user.admin) {
     return next();
   } else {

@@ -4,7 +4,7 @@ const db = require("../db/queries");
 const isAdmin = require("../middleware/isAdmin");
 
 // get posts page
-router.get("/", isAdmin, async function (req, res) {
+router.get("/", async function (req, res) {
   try {
     const posts = await db.getAllPosts();
     res.json(posts);
