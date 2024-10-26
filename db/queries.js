@@ -64,6 +64,20 @@ async function createPost(user, title, content, published) {
   }
 }
 
+async function editPostAvailability(post_id, published) {
+  try {
+    const updatedPost = await prisma.post.update({
+      where: { id: post_id },
+      data: { published: !published },
+    });
+
+    return updatedPost;
+  } catch (error) {
+    console.error("Error publishing post", error);
+    throw error;
+  }
+}
+
 async function getAllPosts() {
   try {
     const posts = await prisma.post.findMany({
@@ -80,10 +94,56 @@ async function getAllPosts() {
   }
 }
 
+// all comment related queries
+async function createComment(post_id, author_id, content) {
+  try {
+    const comment = await prisma.comment.create({
+      data: {
+        content,
+        author: { connect: { id: author_id } },
+        post: { connect: { id: post_id } },
+      },
+    });
+    return comment;
+  } catch (error) {
+    console.error("Error creating comment:", error);
+    throw error;
+  }
+}
+
+async function getAllComments(post_id) {
+  try {
+    const comments = await prisma.comment.findMany({
+      where: { postId: post_id },
+      include: { author: true },
+    });
+    return comments;
+  } catch (error) {
+    console.error("Error fetching comments:", error);
+    throw error;
+  }
+}
+
+async function deleteComment(comment_id) {
+  try {
+    const deletedComment = await prisma.comment.delete({
+      where: { id: comment_id },
+    });
+    return deletedComment;
+  } catch (error) {
+    console.error("Error deleting comment:", error);
+    throw error;
+  }
+}
+
 module.exports = {
   getUser,
   getAllUsers,
   createUser,
   getAllPosts,
   createPost,
+  editPostAvailability,
+  createComment,
+  getAllComments,
+  deleteComment,
 };
