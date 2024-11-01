@@ -89,11 +89,7 @@ app.post("/log-in", async (req, res) => {
 });
 
 app.use("/", indexRouter);
-app.use(
-  "/users",
-  passport.authenticate("jwt", { session: false }),
-  usersRouter
-);
+app.use("/users", usersRouter);
 app.use(
   "/posts",
   passport.authenticate("jwt", { session: false }),
