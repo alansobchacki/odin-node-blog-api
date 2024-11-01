@@ -7,9 +7,9 @@ const isAdmin = require("../middleware/isAdmin");
 router.post("/:postId", async (req, res) => {
   try {
     const { postId } = req.params;
-    const { author_id, content } = req.body;
+    const { author_id, author_name, content } = req.body;
 
-    const comment = await db.createComment(postId, author_id, content);
+    const comment = await db.createComment(postId, author_id, author_name, content);
 
     return res.status(201).json(comment);
   } catch (error) {

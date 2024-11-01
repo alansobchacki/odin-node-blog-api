@@ -98,7 +98,7 @@ async function getAllPosts() {
 }
 
 // all comment related queries
-async function createComment(post_id, author_id, content) {
+async function createComment(post_id, author_id, author_name, content) {
   try {
     console.log(`Creating comment for postId: ${post_id}, authorId: ${author_id}, content: ${content}`);
 
@@ -106,6 +106,7 @@ async function createComment(post_id, author_id, content) {
       data: {
         content,
         author: { connect: { id: author_id } },
+        author_name,
         post: { connect: { id: parseInt(post_id, 10) } },
       },
     });
