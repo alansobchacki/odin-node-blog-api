@@ -27,4 +27,17 @@ router.post("/", isAdmin, async function (req, res) {
   }
 });
 
+// publish/unpublish a post
+router.post("/", isAdmin, async function (req, res) {
+  try {
+    const { post_id, published } = req.body;
+    const updatedPost = await db.editPostAvailability(post_id, published);
+
+    res.json(updatedPost);
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: `Unable to edit post status: ${error}` });
+  }
+});
+
 module.exports = router;

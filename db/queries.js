@@ -86,6 +86,9 @@ async function getAllPosts() {
           admin: true,
         },
       },
+      include: {
+        comments: true,
+      },
     });
     return posts;
   } catch (error) {
@@ -97,11 +100,13 @@ async function getAllPosts() {
 // all comment related queries
 async function createComment(post_id, author_id, content) {
   try {
+    console.log(`Creating comment for postId: ${post_id}, authorId: ${author_id}, content: ${content}`);
+
     const comment = await prisma.comment.create({
       data: {
         content,
         author: { connect: { id: author_id } },
-        post: { connect: { id: post_id } },
+        post: { connect: { id: parseInt(post_id, 10) } },
       },
     });
     return comment;

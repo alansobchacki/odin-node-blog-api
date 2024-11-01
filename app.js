@@ -5,8 +5,8 @@ const cookieParser = require("cookie-parser");
 const logger = require("morgan");
 const cors = require("cors");
 const passport = require("passport");
-const JwtStrategy = require('passport-jwt').Strategy;
-const ExtractJwt = require('passport-jwt').ExtractJwt;
+const JwtStrategy = require("passport-jwt").Strategy;
+const ExtractJwt = require("passport-jwt").ExtractJwt;
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 
@@ -16,6 +16,7 @@ const prisma = new PrismaClient();
 const indexRouter = require("./routes/index");
 const usersRouter = require("./routes/users");
 const postsRouter = require("./routes/posts");
+const commentsRouter = require("./routes/comments");
 
 const app = express();
 
@@ -32,8 +33,8 @@ app.use(express.static(path.join(__dirname, "public")));
 
 // JWT Strategy setup
 const opts = {
-  jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(), 
-  secretOrKey: process.env.JWT_SECRET
+  jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
+  secretOrKey: process.env.JWT_SECRET,
 };
 
 passport.use(
@@ -88,12 +89,29 @@ app.post("/log-in", async (req, res) => {
 });
 
 app.use("/", indexRouter);
-app.use("/users", passport.authenticate('jwt', { session: false }), usersRouter);
-app.use("/posts", passport.authenticate('jwt', { session: false }), postsRouter);
+app.use(
+  "/users",
+  passport.authenticate("jwt", { session: false }),
+  usersRouter
+);
+app.use(
+  "/posts",
+  passport.authenticate("jwt", { session: false }),
+  postsRouter
+);
+app.use(
+   "/comments",
+  passport.authenticate("jwt", { session: false }),
+  commentsRouter
+);
 
-app.get("/protected-route", passport.authenticate('jwt', { session: false }), (req, res) => {
-  res.json({ message: "This is a protected route", user: req.user });
-});
+app.get(
+  "/protected-route",
+  passport.authenticate("jwt", { session: false }),
+  (req, res) => {
+    res.json({ message: "This is a protected route", user: req.user });
+  }
+);
 
 app.get("/log-out", (req, res) => {
   req.logout();
