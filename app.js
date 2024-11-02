@@ -97,7 +97,6 @@ app.use(
 );
 app.use(
    "/comments",
-  passport.authenticate("jwt", { session: false }),
   commentsRouter
 );
 

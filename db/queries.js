@@ -132,9 +132,11 @@ async function getAllComments(post_id) {
 
 async function deleteComment(comment_id) {
   try {
-    const deletedComment = await prisma.comment.delete({
-      where: { id: comment_id },
+    const deletedComment = await prisma.comment.update({
+      where: { id: parseInt(comment_id, 10) },
+      data: { deleted: true },
     });
+
     return deletedComment;
   } catch (error) {
     console.error("Error deleting comment:", error);

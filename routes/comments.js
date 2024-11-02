@@ -36,7 +36,7 @@ router.get("/:postId", async (req, res) => {
 });
 
 // delete a specific comment
-router.delete("/comments/:commentId", isAdmin, async (req, res) => {
+router.put("/:commentId", async (req, res) => {
   try {
     const { commentId } = req.params;
     const deletedComment = await db.deleteComment(commentId);

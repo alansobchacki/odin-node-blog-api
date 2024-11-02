@@ -41,5 +41,6 @@ model Comment {
   author_name String?
   post      Post     @relation(fields: [postId], references: [id])
   postId    Int
+  deleted   Boolean  @default(false)
 }
 
