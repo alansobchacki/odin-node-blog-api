@@ -1,7 +1,6 @@
 const express = require("express");
 const router = express.Router();
 const db = require("../db/queries");
-const isAdmin = require("../middleware/isAdmin");
 
 // create a new comment for a specific post
 router.post("/:postId", async (req, res) => {
