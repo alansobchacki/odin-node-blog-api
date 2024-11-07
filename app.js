@@ -90,15 +90,8 @@ app.post("/log-in", async (req, res) => {
 
 app.use("/", indexRouter);
 app.use("/users", usersRouter);
-app.use(
-  "/posts",
-  passport.authenticate("jwt", { session: false }),
-  postsRouter
-);
-app.use(
-   "/comments",
-  commentsRouter
-);
+app.use("/posts", postsRouter);
+app.use("/comments", commentsRouter);
 
 app.get(
   "/protected-route",

@@ -15,10 +15,10 @@ router.get("/", async function (req, res) {
 });
 
 // create new post
-router.post("/", isAdmin, async function (req, res) {
+router.post("/", async function (req, res) {
   try {
-    const { title, content, published } = req.body;
-    const post = await db.createPost(req.user, title, content, published);
+    const { userId, title, content, published } = req.body;
+    const post = await db.createPost(userId, title, content, published);
 
     res.json(post);
   } catch (error) {

@@ -46,14 +46,14 @@ async function createUser(email, name, password) {
 }
 
 // all post related queries
-async function createPost(user, title, content, published) {
+async function createPost(userId, title, content, published) {
   try {
     const post = await prisma.post.create({
       data: {
         title,
         content,
         published: published || false,
-        author: { connect: { id: user.id } },
+        author: { connect: { id: userId } }
       },
     });
 
