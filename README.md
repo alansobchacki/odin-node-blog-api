@@ -1,4 +1,4 @@
-## Project: Blog API
+Project: Blog API
 
 A RESTful API built with Node.js for a blog.
 
